@@ -107,6 +107,7 @@ private_key         -----BEGIN RSA PRIVATE KEY-----
 -----END RSA PRIVATE KEY-----
 private_key_type    rsa
 serial_number       24:a7:67:6c:25:94:21:d9:ed:1d:8a:52:4f:71:ff:25:57:a9:32:40
+![cert](https://user-images.githubusercontent.com/92984527/148639881-a002ec76-222a-44ad-be9f-7ab3549d41ec.png)
 ```
 - Процесс установки и настройки сервера nginx
 ```
