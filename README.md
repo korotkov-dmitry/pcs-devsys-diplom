@@ -126,12 +126,12 @@ vagrant@vagrant:~$ sudo /etc/init.d/nginx restart
 ```
 - Скрипт генерации нового сертификата работает (сертификат сервера ngnix должен быть "зеленым")
 ```
-vagrant@vagrant:~$ vim create_certificate
+vagrant@vagrant:~$ sudo vim create_certificate
 vault write -format=json pki_int/issue/example-dot-com common_name="test.test.com" ttl="730h" > /etc/ssl/test.crt
 
-cat /etc/ssl/website.crt | jq -r .data.certificate > /etc/ssl/test.crt.pem
-cat /etc/ssl/website.crt | jq -r .data.ca_chain[ ] >> /etc/ssl/test.crt.pem
-cat /etc/ssl/website.crt | jq -r .data.private_key > /etc/ssl/test.key
+cat /etc/ssl/test.crt | jq -r .data.certificate > /etc/ssl/test.crt.pem
+cat /etc/ssl/test.crt | jq -r .data.ca_chain[ ] >> /etc/ssl/test.crt.pem
+cat /etc/ssl/test.crt | jq -r .data.private_key > /etc/ssl/test.key
 ```
 - Crontab работает (выберите число и время так, чтобы показать что crontab запускается и делает что надо)
 ```
