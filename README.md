@@ -73,8 +73,45 @@ vagrant@vagrant:~$ vault write pki/config/urls \
 >      issuing_certificates="$VAULT_ADDR/v1/pki/ca" \
 >      crl_distribution_points="$VAULT_ADDR/v1/pki/crl"
 Success! Data written to: pki/config/urls
+vagrant@vagrant:~$ vault secrets enable -path=pki_int pki
+vagrant@vagrant:~$ vault secrets tune -max-lease-ttl=43800h pki_int
+Success! Tuned the secrets engine at: pki_int/
+vagrant@vagrant:~$ vault write -format=json pki_int/intermediate/generate/internal \
+>      common_name="test.com Intermediate Authority" \
+>      | jq -r '.data.csr' > pki_intermediate.csr
+vagrant@vagrant:~$ vault write -format=json pki/root/sign-intermediate csr=@pki_intermediate.csr \
+>      format=pem_bundle ttl="43800h" \
+>      | jq -r '.data.certificate' > intermediate.cert.pem
+vagrant@vagrant:~$ vault write pki_int/intermediate/set-signed certificate=@intermediate.cert.pem
+Success! Data written to: pki_int/intermediate/set-signed
+vagrant@vagrant:~$ vault write pki_int/roles/example-dot-com \
+>      allowed_domains="test.com" \
+>      allow_subdomains=true \
+>      max_ttl="720h"
+Success! Data written to: pki_int/roles/example-dot-com
+vagrant@vagrant:~$ vault write pki_int/issue/example-dot-com common_name="test.test.com" ttl="24h"
+Key                 Value
+---                 -----
+ca_chain            [-----BEGIN CERTIFICATE-----
+...
+-----END CERTIFICATE-----]
+certificate         -----BEGIN CERTIFICATE-----
+...
+-----END CERTIFICATE-----
+expiration          1641719983
+issuing_ca          -----BEGIN CERTIFICATE-----
+...
+-----END CERTIFICATE-----
+private_key         -----BEGIN RSA PRIVATE KEY-----
+...
+-----END RSA PRIVATE KEY-----
+private_key_type    rsa
+serial_number       24:a7:67:6c:25:94:21:d9:ed:1d:8a:52:4f:71:ff:25:57:a9:32:40
 ```
 - Процесс установки и настройки сервера nginx
+```
+vagrant@vagrant:~$ sudo apt install nginx
+```
 - Страница сервера nginx в браузере хоста не содержит предупреждений 
 - Скрипт генерации нового сертификата работает (сертификат сервера ngnix должен быть "зеленым")
 - Crontab работает (выберите число и время так, чтобы показать что crontab запускается и делает что надо)
