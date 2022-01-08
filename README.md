@@ -155,10 +155,8 @@ Jan 08 12:17:02 vagrant CRON[2311]: pam_unix(cron:session): session closed for u
 Jan 08 12:17:02 vagrant CRON[2310]: pam_unix(cron:session): session closed for user root
 Jan 08 12:18:01 vagrant CRON[2327]: pam_unix(cron:session): session opened for user vagrant by (uid=0)
 Jan 08 12:18:01 vagrant CRON[2328]: (vagrant) CMD (/home/vagrant/create_certificate)
-Jan 08 12:18:01 vagrant CRON[2327]: (CRON) info (No MTA installed, discarding output)
 Jan 08 12:18:01 vagrant CRON[2327]: pam_unix(cron:session): session closed for user vagrant
 Jan 08 12:19:01 vagrant CRON[2340]: pam_unix(cron:session): session opened for user vagrant by (uid=0)
 Jan 08 12:19:01 vagrant CRON[2341]: (vagrant) CMD (/home/vagrant/create_certificate)
-Jan 08 12:19:01 vagrant CRON[2340]: (CRON) info (No MTA installed, discarding output)
 Jan 08 12:19:01 vagrant CRON[2340]: pam_unix(cron:session): session closed for user vagrant
 ```
