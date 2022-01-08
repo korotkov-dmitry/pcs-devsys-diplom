@@ -107,12 +107,58 @@ private_key         -----BEGIN RSA PRIVATE KEY-----
 -----END RSA PRIVATE KEY-----
 private_key_type    rsa
 serial_number       24:a7:67:6c:25:94:21:d9:ed:1d:8a:52:4f:71:ff:25:57:a9:32:40
-![cert](https://user-images.githubusercontent.com/92984527/148639881-a002ec76-222a-44ad-be9f-7ab3549d41ec.png)
 ```
+![cert](https://user-images.githubusercontent.com/92984527/148639881-a002ec76-222a-44ad-be9f-7ab3549d41ec.png)
 - Процесс установки и настройки сервера nginx
 ```
 vagrant@vagrant:~$ sudo apt install nginx
+vagrant@vagrant:~$ sudo vim /etc/nginx/nginx.conf
+...
+http {
+...
+  server {
+      listen              443 ssl;
+      server_name         test.com;
+      ssl_certificate     /etc/ssl/test.crt;
+      ssl_certificate_key /etc/ssl/test.key;
+      
+vagrant@vagrant:~$ sudo /etc/init.d/nginx restart
 ```
-- Страница сервера nginx в браузере хоста не содержит предупреждений 
 - Скрипт генерации нового сертификата работает (сертификат сервера ngnix должен быть "зеленым")
+```
+vagrant@vagrant:~$ vim create_certificate
+vault write -format=json pki_int/issue/example-dot-com common_name="test.test.com" ttl="730h" > /etc/ssl/test.crt
+
+cat /etc/ssl/website.crt | jq -r .data.certificate > /etc/ssl/test.crt.pem
+cat /etc/ssl/website.crt | jq -r .data.ca_chain[ ] >> /etc/ssl/test.crt.pem
+cat /etc/ssl/website.crt | jq -r .data.private_key > /etc/ssl/test.key
+```
 - Crontab работает (выберите число и время так, чтобы показать что crontab запускается и делает что надо)
+```
+vagrant@vagrant:~$ crontab -e
+...
+* * * * * /home/vagrant/create_certificate
+vagrant@vagrant:~$ sudo service rsyslog restart
+vagrant@vagrant:~$ sudo service cron restart
+vagrant@vagrant:~$ sudo service cron status
+● cron.service - Regular background program processing daemon
+     Loaded: loaded (/lib/systemd/system/cron.service; enabled; vendor preset: enabled)
+     Active: active (running) since Sat 2022-01-08 12:16:24 UTC; 3min 31s ago
+       Docs: man:cron(8)
+   Main PID: 2285 (cron)
+      Tasks: 1 (limit: 1071)
+     Memory: 1.1M
+     CGroup: /system.slice/cron.service
+             └─2285 /usr/sbin/cron -f
+
+Jan 08 12:17:02 vagrant CRON[2311]: pam_unix(cron:session): session closed for user vagrant
+Jan 08 12:17:02 vagrant CRON[2310]: pam_unix(cron:session): session closed for user root
+Jan 08 12:18:01 vagrant CRON[2327]: pam_unix(cron:session): session opened for user vagrant by (uid=0)
+Jan 08 12:18:01 vagrant CRON[2328]: (vagrant) CMD (/home/vagrant/create_certificate)
+Jan 08 12:18:01 vagrant CRON[2327]: (CRON) info (No MTA installed, discarding output)
+Jan 08 12:18:01 vagrant CRON[2327]: pam_unix(cron:session): session closed for user vagrant
+Jan 08 12:19:01 vagrant CRON[2340]: pam_unix(cron:session): session opened for user vagrant by (uid=0)
+Jan 08 12:19:01 vagrant CRON[2341]: (vagrant) CMD (/home/vagrant/create_certificate)
+Jan 08 12:19:01 vagrant CRON[2340]: (CRON) info (No MTA installed, discarding output)
+Jan 08 12:19:01 vagrant CRON[2340]: pam_unix(cron:session): session closed for user vagrant
+```
