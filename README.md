@@ -68,7 +68,7 @@ vagrant@vagrant:~$ vault secrets enable pki
 Success! Enabled the pki secrets engine at: pki/
 vagrant@vagrant:~$ vault secrets tune -max-lease-ttl=730h pki
 Success! Tuned the secrets engine at: pki/
-vagrant@vagrant:~$ vault write -field=certificate pki/root/generate/internal \ common_name="test.com" \ ttl=730h > CA_cert.crt
+vagrant@vagrant:~$ vault write -field=certificate pki/root/generate/internal \ common_name="example.com" \ ttl=730h > CA_cert.crt
 vagrant@vagrant:~$ vault write pki/config/urls \
 >      issuing_certificates="$VAULT_ADDR/v1/pki/ca" \
 >      crl_distribution_points="$VAULT_ADDR/v1/pki/crl"
@@ -77,7 +77,7 @@ vagrant@vagrant:~$ vault secrets enable -path=pki_int pki
 vagrant@vagrant:~$ vault secrets tune -max-lease-ttl=43800h pki_int
 Success! Tuned the secrets engine at: pki_int/
 vagrant@vagrant:~$ vault write -format=json pki_int/intermediate/generate/internal \
->      common_name="test.com Intermediate Authority" \
+>      common_name="example.com Intermediate Authority" \
 >      | jq -r '.data.csr' > pki_intermediate.csr
 vagrant@vagrant:~$ vault write -format=json pki/root/sign-intermediate csr=@pki_intermediate.csr \
 >      format=pem_bundle ttl="43800h" \
@@ -85,11 +85,11 @@ vagrant@vagrant:~$ vault write -format=json pki/root/sign-intermediate csr=@pki_
 vagrant@vagrant:~$ vault write pki_int/intermediate/set-signed certificate=@intermediate.cert.pem
 Success! Data written to: pki_int/intermediate/set-signed
 vagrant@vagrant:~$ vault write pki_int/roles/example-dot-com \
->      allowed_domains="test.com" \
+>      allowed_domains="example.com" \
 >      allow_subdomains=true \
 >      max_ttl="720h"
 Success! Data written to: pki_int/roles/example-dot-com
-vagrant@vagrant:~$ vault write pki_int/issue/example-dot-com common_name="test.test.com" ttl="24h"
+vagrant@vagrant:~$ vault write pki_int/issue/example-dot-com common_name="test.example.com" ttl="24h"
 Key                 Value
 ---                 -----
 ca_chain            [-----BEGIN CERTIFICATE-----
@@ -118,20 +118,24 @@ http {
 ...
   server {
       listen              443 ssl;
-      server_name         test.com;
-      ssl_certificate     /etc/ssl/test.crt;
-      ssl_certificate_key /etc/ssl/test.key;
-      
+      server_name         test.example.com;
+      ssl_certificate     /etc/ssl/example.crt;
+      ssl_certificate_key /etc/ssl/example.key;
+vagrant@vagrant:~$ sudo nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful      
 vagrant@vagrant:~$ sudo /etc/init.d/nginx restart
 ```
+![nginx](https://user-images.githubusercontent.com/92984527/149081826-cb8a1b6a-aafa-42fb-aeb7-72afac730f0b.png)
+![certificate](https://user-images.githubusercontent.com/92984527/149081895-9e3b895d-8b54-4e45-8822-cbdb49a39b08.png)
 - Скрипт генерации нового сертификата работает (сертификат сервера ngnix должен быть "зеленым")
 ```
 vagrant@vagrant:~$ sudo vim create_certificate
-vault write -format=json pki_int/issue/example-dot-com common_name="test.test.com" ttl="730h" > /etc/ssl/test.crt
+vault write -format=json pki_int/issue/example-dot-com common_name="test.example.com" ttl="730h" > /etc/ssl/example.crt
 
-cat /etc/ssl/test.crt | jq -r .data.certificate > /etc/ssl/test.crt.pem
-cat /etc/ssl/test.crt | jq -r .data.ca_chain[ ] >> /etc/ssl/test.crt.pem
-cat /etc/ssl/test.crt | jq -r .data.private_key > /etc/ssl/test.key
+cat /etc/ssl/example.crt | jq -r .data.certificate > /etc/ssl/example.crt.pem
+cat /etc/ssl/example.crt | jq -r .data.ca_chain[ ] >> /etc/ssl/example.crt.pem
+cat /etc/ssl/example.crt | jq -r .data.private_key > /etc/ssl/example.key
 ```
 - Crontab работает (выберите число и время так, чтобы показать что crontab запускается и делает что надо)
 ```
